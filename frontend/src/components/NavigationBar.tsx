@@ -25,8 +25,8 @@ export function NavigationBar({
   const showBack = currentStep > 0;
 
   return (
-    <header className="sticky top-0 z-30 h-14 w-full border-b border-[var(--theme-border)] bg-white/80 backdrop-blur-md">
-      <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+    <header className="sticky top-0 z-30 w-full border-b border-[var(--theme-border)] bg-white/85 backdrop-blur-md pt-[env(safe-area-inset-top,0px)]">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-3 sm:px-6">
         <div className="flex items-center gap-2 shrink-0">
           {showBack ? (
             <button
@@ -77,8 +77,8 @@ export function NavigationBar({
           })}
         </nav>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <span className="text-xs font-medium tabular-nums text-[var(--theme-muted)] md:hidden">
+        <div className="flex items-center gap-2.5 shrink-0">
+          <span className="text-[11px] font-semibold tabular-nums px-2.5 py-1 rounded-full bg-[var(--theme-blush)] text-[var(--theme-accent)] shadow-xs md:hidden">
             {currentStep + 1} / {steps.length}
           </span>
           <MusicPlayer />

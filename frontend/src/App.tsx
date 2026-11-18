@@ -6,7 +6,6 @@ import { NavigationBar, type StoryStepMeta } from './components/NavigationBar';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { BirthdayCake } from './components/BirthdayCake';
 import { BirthdayLetter } from './components/BirthdayLetter';
-import { MemoriesGallery } from './components/MemoriesGallery';
 import { FunZone } from './components/FunZone';
 import { FinalSurprise } from './components/FinalSurprise';
 import { FeedbackForm } from './components/FeedbackForm';
@@ -15,7 +14,6 @@ const STORY_STEPS: readonly StoryStepMeta[] = [
   { id: 'welcome', shortLabel: 'Welcome' },
   { id: 'cake', shortLabel: 'Cake' },
   { id: 'letter', shortLabel: 'Letter' },
-  { id: 'memories', shortLabel: 'Memories' },
   { id: 'fun', shortLabel: 'Fun Zone' },
   { id: 'finale', shortLabel: 'Surprise' },
   { id: 'feedback', shortLabel: 'Feedback' },
@@ -63,7 +61,7 @@ export default function App() {
         style={themeVars}
         className="birthday-atmosphere relative min-h-dvh w-full overflow-x-hidden flex flex-col"
       >
-        <AmbientBackdrop intensity={currentStep === 5 ? 'celebrate' : 'soft'} />
+        <AmbientBackdrop intensity={currentStep === 4 ? 'celebrate' : 'soft'} />
 
         <NavigationBar
           steps={STORY_STEPS}
@@ -85,10 +83,9 @@ export default function App() {
               {currentStep === 0 && <WelcomeScreen onOpen={handleNext} />}
               {currentStep === 1 && <BirthdayCake onContinue={handleNext} />}
               {currentStep === 2 && <BirthdayLetter onContinue={handleNext} />}
-              {currentStep === 3 && <MemoriesGallery onContinue={handleNext} />}
-              {currentStep === 4 && <FunZone onContinue={handleNext} />}
-              {currentStep === 5 && <FinalSurprise onContinue={handleNext} />}
-              {currentStep === 6 && <FeedbackForm onReplayStory={handleReplay} />}
+              {currentStep === 3 && <FunZone onContinue={handleNext} />}
+              {currentStep === 4 && <FinalSurprise onContinue={handleNext} />}
+              {currentStep === 5 && <FeedbackForm onReplayStory={handleReplay} />}
             </motion.div>
           </AnimatePresence>
         </main>

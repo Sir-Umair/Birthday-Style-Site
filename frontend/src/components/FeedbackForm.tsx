@@ -27,7 +27,17 @@ export function FeedbackForm({ onReplayStory }: FeedbackFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [canRetrySend, setCanRetrySend] = useState(false);
-  const [submitted, setSubmitted] = useState<boolean>(() => hasAlreadySubmittedFeedback());
+  const [submitted, setSubmitted] = useState<boolean>(false);
+
+  const handleSendAnother = () => {
+    setRating(0);
+    setHoverRating(0);
+    setMessage('');
+    setMadeMeSmile('');
+    setErrorMsg(null);
+    setCanRetrySend(false);
+    setSubmitted(false);
+  };
 
   const activeStar = hoverRating || rating;
 
@@ -98,11 +108,19 @@ export function FeedbackForm({ onReplayStory }: FeedbackFormProps) {
               {feedback.successMessage}
             </p>
 
-            <div className="mt-8 flex justify-center">
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={handleSendAnother}
+                className="inline-flex w-full sm:w-auto min-h-[48px] items-center justify-center gap-2 rounded-full bg-[var(--theme-accent)] px-7 py-3 text-sm font-semibold text-white shadow-[0_10px_20px_-8px_rgba(212,77,122,0.5)] transition-colors hover:bg-[var(--theme-accent-hover)] cursor-pointer"
+              >
+                <span>Send Another Note 💌</span>
+              </button>
+
               <button
                 type="button"
                 onClick={onReplayStory}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-[var(--theme-border)] bg-white px-6 py-2.5 text-sm font-semibold text-[var(--theme-ink)] transition-colors hover:bg-[var(--theme-blush)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--theme-accent)] cursor-pointer"
+                className="inline-flex w-full sm:w-auto min-h-[48px] items-center justify-center gap-2 rounded-full border border-[var(--theme-border)] bg-white px-6 py-2.5 text-sm font-semibold text-[var(--theme-ink)] transition-colors hover:bg-[var(--theme-blush)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--theme-accent)] cursor-pointer"
               >
                 <RotateCcw className="h-4 w-4 text-[var(--theme-accent)]" aria-hidden="true" />
                 <span>Replay your surprise</span>
@@ -116,7 +134,7 @@ export function FeedbackForm({ onReplayStory }: FeedbackFormProps) {
             initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="soft-card rounded-3xl px-5 py-8 sm:px-10 sm:py-10"
+            className="soft-card rounded-3xl px-4 py-6 sm:px-10 sm:py-10"
           >
             <div className="text-center">
               <p className="text-xs font-medium tracking-wide text-[var(--theme-muted)]">

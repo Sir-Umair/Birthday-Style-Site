@@ -230,7 +230,7 @@ export function FunZone({ onContinue }: FunZoneProps) {
           <button
             type="button"
             onClick={onContinue}
-            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-[var(--theme-accent)] px-8 py-3 text-sm sm:text-base font-semibold text-white shadow-[0_12px_24px_-8px_rgba(212,77,122,0.5)] transition-colors hover:bg-[var(--theme-accent-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--theme-accent)] whitespace-nowrap shrink-0 cursor-pointer"
+            className="inline-flex w-full sm:w-auto min-h-[48px] items-center justify-center gap-2 rounded-full bg-[var(--theme-accent)] px-8 py-3 text-sm sm:text-base font-semibold text-white shadow-[0_12px_24px_-8px_rgba(212,77,122,0.5)] transition-colors hover:bg-[var(--theme-accent-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--theme-accent)] whitespace-nowrap shrink-0 cursor-pointer"
           >
             <span>{funZone.continueLabel}</span>
             <ArrowRight className="h-4 w-4" aria-hidden="true" />

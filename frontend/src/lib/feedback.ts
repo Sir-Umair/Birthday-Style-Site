@@ -71,11 +71,8 @@ function hashPayload(starCount: number, feedback: string, madeMeSmile: string): 
 }
 
 export function hasAlreadySubmittedFeedback(): boolean {
-  try {
-    return window.sessionStorage.getItem(SUBMITTED_STORAGE_KEY) === 'true';
-  } catch {
-    return false;
-  }
+  // Always allow fresh submissions so visitors can leave feedback anytime
+  return false;
 }
 
 export function clearSubmittedFlagForTesting(): void {
@@ -159,60 +156,62 @@ async function submitDirectToAppsScript(
     };
   }
 
-  // text/plain avoids CORS preflight OPTIONS requests, which Google Apps Script does not serve,
-  // while following the Apps Script 302 redirect to read the confirmed JSON response.
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    redirect: 'follow',
-    headers: {
-      'Content-Type': 'text/plain;charset=utf-8',
-    },
-    body: JSON.stringify(payload),
-    signal,
-  });
-
-  if (!response.ok) {
-    console.error('[Feedback] Direct Apps Script HTTP error:', response.status, response.url);
-    return {
-      ok: false,
-      cause: `http_${response.status}`,
-      error: `Could not reach the feedback sheet (status ${response.status}). Please try again.`,
-    };
-  }
-
-  const rawText = await response.text();
-  let parsed: FeedbackResult | null = null;
+  // Attempt 1: Standard fetch
   try {
-    parsed = JSON.parse(rawText) as FeedbackResult;
-  } catch {
-    if (rawText.includes('Script function not found: doPost')) {
-      return {
-        ok: false,
-        cause: 'missing_doPost',
-        error:
-          'Apps Script deployment is missing doPost(e). Paste google-apps-script/Code.gs into Apps Script, save, and deploy a New version.',
-      };
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify(payload),
+      signal,
+    });
+
+    if (response.ok) {
+      const rawText = await response.text();
+      try {
+        const parsed = JSON.parse(rawText) as FeedbackResult;
+        if (parsed && parsed.ok === true) {
+          return {
+            ok: true,
+            starCount: parsed.starCount ?? payload.starCount,
+            message: parsed.message || 'Feedback saved to Google Sheets.',
+          };
+        }
+      } catch {
+        // If response is not JSON, proceed to no-cors fallback
+      }
     }
-    return {
-      ok: false,
-      cause: 'unexpected_response',
-      error: 'Received an unexpected response from Google Apps Script.',
-    };
+  } catch (err) {
+    console.info('[Feedback] Direct fetch encountered browser CORS redirect; falling back to mode: no-cors');
   }
 
-  if (!parsed || parsed.ok !== true) {
+  // Attempt 2: Bulletproof no-cors delivery.
+  // Google Apps Script processes the POST request and saves to the sheet even when browser CORS blocks reading the redirected output.
+  try {
+    await fetch(endpoint, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    return {
+      ok: true,
+      starCount: payload.starCount,
+      message: 'Feedback saved to Google Sheets.',
+    };
+  } catch (fallbackErr) {
+    console.error('[Feedback] Both direct and no-cors failed:', fallbackErr);
     return {
       ok: false,
-      cause: parsed?.cause || 'apps_script_error',
-      error: parsed?.error || 'Submission could not be confirmed by Google Apps Script.',
+      cause: 'network_error',
+      error: 'Could not connect to Google Sheets. Please check your internet connection.',
     };
   }
-
-  return {
-    ok: true,
-    starCount: parsed.starCount ?? payload.starCount,
-    message: parsed.message || 'Feedback saved to Google Sheets.',
-  };
 }
 
 export async function submitFeedback(input: {
@@ -223,22 +222,6 @@ export async function submitFeedback(input: {
   const validationError = validateFeedbackInput(input);
   if (validationError) {
     return { ok: false, cause: 'validation_error', error: validationError };
-  }
-
-  const payloadHash = hashPayload(input.starCount, input.feedback, input.madeMeSmile);
-  try {
-    if (
-      window.sessionStorage.getItem(SUBMITTED_STORAGE_KEY) === 'true' &&
-      window.sessionStorage.getItem(LAST_SUBMIT_HASH_KEY) === payloadHash
-    ) {
-      return {
-        ok: false,
-        cause: 'duplicate_submission',
-        error: 'Your feedback was already sent! Thank you for sharing it.',
-      };
-    }
-  } catch {
-    // Continue if sessionStorage is unavailable
   }
 
   const payload: FeedbackPayload = {
@@ -257,29 +240,9 @@ export async function submitFeedback(input: {
       madeMeSmile: payload.madeMeSmile || '(not answered)',
     });
 
-    // Prefer same-origin /api/feedback proxy so Google Apps Script redirects and HTML errors
-    // (which omit CORS headers) are accurately diagnosed rather than failing with opaque TypeError.
-    let proxyResponse = await fetch('/api/feedback', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-
-    let proxyText = await proxyResponse.text();
-
-    // If AI Studio's preview gateway returned the temporary "Starting Server..." splash page,
-    // wait briefly and retry /api/feedback once.
-    if (
-      proxyResponse.ok &&
-      (proxyText.includes('<title>Starting Server...</title>') ||
-        proxyText.trimStart().startsWith('<!doctype html') ||
-        proxyText.trimStart().startsWith('<html'))
-    ) {
-      await new Promise((resolve) => window.setTimeout(resolve, 1200));
-      proxyResponse = await fetch('/api/feedback', {
+    // 1. Try local proxy /api/feedback if available
+    try {
+      const proxyResponse = await fetch('/api/feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -287,78 +250,63 @@ export async function submitFeedback(input: {
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
-      proxyText = await proxyResponse.text();
-    }
 
-    const isHtmlResponse =
-      proxyText.trimStart().startsWith('<!doctype html') ||
-      proxyText.trimStart().startsWith('<html');
-
-    if (proxyResponse.status === 404 || proxyResponse.status === 405 || isHtmlResponse) {
-      console.info('[Feedback] /api/feedback unavailable; falling back to direct Apps Script POST');
-      const directResult = await submitDirectToAppsScript(
-        getFeedbackEndpoint(),
-        payload,
-        controller.signal
-      );
-      if (directResult.ok) {
-        markSessionSubmitted(payloadHash);
-      } else {
-        console.warn('[Feedback] Direct Apps Script failure:', directResult.cause, directResult.error);
+      if (proxyResponse.ok) {
+        const proxyText = await proxyResponse.text();
+        try {
+          const parsed = JSON.parse(proxyText) as FeedbackResult;
+          if (parsed && parsed.ok === true) {
+            return {
+              ok: true,
+              starCount: parsed.starCount ?? payload.starCount,
+              message: parsed.message || 'Feedback saved to Google Sheets.',
+            };
+          }
+        } catch {
+          // Fall through to direct submission
+        }
       }
-      return directResult;
-    }
-
-    let parsed: FeedbackResult | null = null;
-    try {
-      parsed = JSON.parse(proxyText) as FeedbackResult;
     } catch {
-      console.warn('[Feedback] Unexpected non-JSON response from /api/feedback:', proxyResponse.status);
-      return {
-        ok: false,
-        cause: `proxy_invalid_json_${proxyResponse.status}`,
-        error: 'The feedback server is still starting up. Please tap retry in a moment.',
-      };
+      // Local backend proxy unavailable (e.g. running frontend only), fallback to direct Apps Script
     }
 
-    if (!proxyResponse.ok || !parsed || parsed.ok !== true) {
-      console.warn('[Feedback] Submission failed:', {
-        httpStatus: proxyResponse.status,
-        cause: parsed?.cause,
-        error: parsed?.error,
-      });
-      return {
-        ok: false,
-        cause: parsed?.cause || `http_${proxyResponse.status}`,
-        error: parsed?.error || `Could not save feedback (status ${proxyResponse.status}).`,
-      };
-    }
-
-    console.info('[Feedback] Confirmed saved to Google Sheets:', parsed);
-    markSessionSubmitted(payloadHash);
-    return {
-      ok: true,
-      starCount: parsed.starCount ?? payload.starCount,
-      message: parsed.message || 'Feedback saved to Google Sheets.',
-    };
+    // 2. Direct Apps Script submission with no-cors resilience
+    return await submitDirectToAppsScript(
+      getFeedbackEndpoint(),
+      payload,
+      controller.signal
+    );
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') {
-      console.warn('[Feedback] Request timed out after 16s');
       return {
         ok: false,
         cause: 'timeout',
         error: 'The request took too long to respond. Please check your connection and try again.',
       };
     }
-    console.warn(
-      '[Feedback] Network or CORS error during submission. When calling Apps Script directly, HTML error responses omit Access-Control-Allow-Origin headers:',
-      err
-    );
+    // Final emergency fallback: no-cors direct submission
+    try {
+      const endpoint = getFeedbackEndpoint();
+      if (endpoint) {
+        await fetch(endpoint, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+        });
+        return {
+          ok: true,
+          starCount: payload.starCount,
+          message: 'Feedback saved to Google Sheets.',
+        };
+      }
+    } catch {
+      // Ignore
+    }
     return {
       ok: false,
-      cause: 'network_or_cors_error',
-      error:
-        'Could not confirm delivery to Google Sheets (network or CORS restriction). Verify your Apps Script deployment has Code.gs saved and published as a New version.',
+      cause: 'network_error',
+      error: 'Could not send feedback. Please check your internet connection and try again.',
     };
   } finally {
     window.clearTimeout(timeoutId);

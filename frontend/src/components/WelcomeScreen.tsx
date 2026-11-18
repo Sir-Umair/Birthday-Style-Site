@@ -48,7 +48,7 @@ export function WelcomeScreen({ onOpen }: WelcomeScreenProps) {
               onClick={onOpen}
               whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
               whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
-              className="group relative inline-flex min-h-[52px] items-center justify-center gap-2.5 rounded-full bg-[var(--theme-accent)] px-8 py-3.5 text-base font-semibold text-white shadow-[0_14px_30px_-10px_rgba(212,77,122,0.55)] transition-colors hover:bg-[var(--theme-accent-hover)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--theme-accent)] whitespace-nowrap shrink-0 cursor-pointer"
+              className="group relative inline-flex w-full sm:w-auto min-h-[52px] items-center justify-center gap-2.5 rounded-full bg-[var(--theme-accent)] px-8 py-3.5 text-base font-semibold text-white shadow-[0_14px_30px_-10px_rgba(212,77,122,0.55)] transition-colors hover:bg-[var(--theme-accent-hover)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--theme-accent)] whitespace-nowrap shrink-0 cursor-pointer"
             >
               <span>{welcome.buttonLabel}</span>
               <Sparkles className="h-4 w-4 transition-transform duration-300 group-hover:rotate-12" aria-hidden="true" />

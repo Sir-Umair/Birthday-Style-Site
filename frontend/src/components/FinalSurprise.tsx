@@ -69,13 +69,13 @@ export function FinalSurprise({ onContinue }: FinalSurpriseProps) {
               {finalSurprise.message}
             </p>
 
-            <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row">
+            <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row w-full sm:w-auto justify-center">
               <motion.button
                 type="button"
                 onClick={onContinue}
                 whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
                 whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
-                className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-[var(--theme-accent)] px-8 py-3.5 text-base font-semibold text-white shadow-[0_14px_30px_-10px_rgba(212,77,122,0.55)] transition-colors hover:bg-[var(--theme-accent-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--theme-accent)] whitespace-nowrap shrink-0 cursor-pointer"
+                className="inline-flex w-full sm:w-auto min-h-[52px] items-center justify-center gap-2 rounded-full bg-[var(--theme-accent)] px-8 py-3.5 text-base font-semibold text-white shadow-[0_14px_30px_-10px_rgba(212,77,122,0.55)] transition-colors hover:bg-[var(--theme-accent-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--theme-accent)] whitespace-nowrap shrink-0 cursor-pointer"
               >
                 <span>{finalSurprise.buttonLabel}</span>
               </motion.button>
@@ -83,7 +83,7 @@ export function FinalSurprise({ onContinue }: FinalSurpriseProps) {
               <button
                 type="button"
                 onClick={() => fireCelebration('grand')}
-                className="inline-flex min-h-[48px] items-center justify-center gap-1.5 rounded-full border border-[var(--theme-border)] bg-white/85 px-5 py-2.5 text-sm font-medium text-[var(--theme-ink)] transition-colors hover:bg-[var(--theme-blush)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--theme-accent)] whitespace-nowrap shrink-0 cursor-pointer"
+                className="inline-flex w-full sm:w-auto min-h-[48px] items-center justify-center gap-1.5 rounded-full border border-[var(--theme-border)] bg-white/85 px-5 py-2.5 text-sm font-medium text-[var(--theme-ink)] transition-colors hover:bg-[var(--theme-blush)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--theme-accent)] whitespace-nowrap shrink-0 cursor-pointer"
               >
                 <Sparkles className="h-4 w-4 text-[var(--theme-accent)]" aria-hidden="true" />
                 <span>Celebrate again</span>

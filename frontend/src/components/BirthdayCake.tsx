@@ -269,9 +269,20 @@ export function BirthdayCake({ onContinue }: BirthdayCakeProps) {
                 </button>
               </>
             ) : (
-              <p className="text-xs text-[var(--theme-muted)]">
-                Tip: tap each glowing flame one by one
-              </p>
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLitCandles(Array.from({ length: totalCandles }, () => false));
+                  }}
+                  className="inline-flex min-h-[42px] items-center justify-center gap-1.5 rounded-full bg-[var(--theme-blush)] px-5 py-2 text-xs font-semibold text-[var(--theme-accent)] transition-colors hover:bg-[#fadbe6] cursor-pointer"
+                >
+                  <span>Blow Out All Candles 🌬️✨</span>
+                </button>
+                <p className="text-[11px] text-[var(--theme-muted)]">
+                  Or tap each glowing flame one by one
+                </p>
+              </div>
             )}
           </div>
         </motion.div>
