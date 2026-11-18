@@ -10,9 +10,15 @@
     "build": "npm run build --prefix frontend",
     "build:frontend": "npm run build --prefix frontend",
     "build:backend": "npm run build --prefix backend",
+    "vercel-build": "npm install --prefix frontend && npm run build --prefix frontend",
     "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend"
   },
+  "dependencies": {
+    "@types/node": "^22.14.0",
+    "@vercel/node": "^5.1.9"
+  },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "typescript": "^7.0.2"
   }
 }
