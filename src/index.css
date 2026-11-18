@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    --theme-canvas: #fdf8fa;
+    --theme-surface: #ffffff;
+    --theme-blush: #fcebf1;
+    --theme-lavender: #f0ebf9;
+    --theme-cream: #fdf6ef;
+    --theme-ink: #2b1d2e;
+    --theme-muted: #6c576e;
+    --theme-accent: #d44d7a;
+    --theme-accent-hover: #bc3965;
+    --theme-lavender-accent: #8264bf;
+    --theme-border: rgba(154, 102, 130, 0.16);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    color: var(--theme-ink);
+    background-color: var(--theme-canvas);
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    background-color: var(--theme-canvas);
+    color: var(--theme-ink);
+    font-feature-settings: "kern" 1, "liga" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+}
+
+.birthday-atmosphere {
+  background-color: var(--theme-canvas);
+  background-image:
+    radial-gradient(circle at 12% 14%, var(--theme-blush) 0%, transparent 45%),
+    radial-gradient(circle at 88% 18%, var(--theme-lavender) 0%, transparent 46%),
+    radial-gradient(circle at 50% 88%, var(--theme-cream) 0%, transparent 55%);
+}
+
+.soft-card {
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--theme-border);
+  box-shadow:
+    0 18px 42px -24px rgba(105, 52, 84, 0.22),
+    0 4px 12px -4px rgba(105, 52, 84, 0.06);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
